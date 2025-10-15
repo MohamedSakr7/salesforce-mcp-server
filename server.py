@@ -1,4 +1,5 @@
-from fastmcp import FastMCP, tool
+from fastmcp import FastMCP
+from fastmcp.tools import tool
 import requests, os
 
 app = FastMCP()
