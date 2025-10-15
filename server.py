@@ -12,7 +12,7 @@ import uvicorn
 mcp = FastMCP("Salesforce MCP")
 
 # ---------------------------------------------------------
-# Define logic functions
+# Define the logic functions
 # ---------------------------------------------------------
 def ping_logic() -> str:
     """Simple health check"""
@@ -29,13 +29,25 @@ def sf_query_logic(soql: str, access_token: str, instance_url: str):
         return {"status_code": r.status_code, "text": r.text}
 
 # ---------------------------------------------------------
-# Wrap and register the tools (legacy-compatible syntax)
+# Register tools with required fields
 # ---------------------------------------------------------
-ping_tool = FunctionTool()
-ping_tool.set_function(ping_logic)
+ping_tool = FunctionTool(
+    name="ping",
+    description="Simple health check",
+    fn=ping_logic,
+    parameters={}  # No input parameters
+)
 
-sf_query_tool = FunctionTool()
-sf_query_tool.set_function(sf_query_logic)
+sf_query_tool = FunctionTool(
+    name="sf_query",
+    description="Run a Salesforce SOQL query",
+    fn=sf_query_logic,
+    parameters={
+        "soql": {"type": "string", "description": "The SOQL query to run"},
+        "access_token": {"type": "string", "description": "Salesforce OAuth access token"},
+        "instance_url": {"type": "string", "description": "Salesforce instance URL"}
+    }
+)
 
 mcp.add_tool(ping_tool)
 mcp.add_tool(sf_query_tool)
@@ -54,23 +66,15 @@ app.add_middleware(
 )
 
 # ---------------------------------------------------------
-# Endpoints
+# API routes
 # ---------------------------------------------------------
 @app.get("/health")
 def health():
     return {"status": "ok"}
 
-@app.options("/ping")
-def ping_options():
-    return {}
-
 @app.post("/ping")
 def ping_route():
     return {"result": ping_logic()}
-
-@app.options("/sf_query")
-def sf_query_options():
-    return {}
 
 @app.post("/sf_query")
 async def sf_query_route(request: Request):
