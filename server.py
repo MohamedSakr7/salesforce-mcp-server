@@ -1,14 +1,17 @@
 from fastmcp import FastMCP
-from fastmcp.decorators import tool
-import requests, os
+import requests
+import os
 
-app = FastMCP()
+# Create the MCP app
+app = FastMCP("Salesforce MCP")
 
-@tool
-def ping():
+# Simple test endpoint
+@app.tool()
+def ping() -> str:
     return "pong"
 
-@tool
+# Salesforce query tool
+@app.tool()
 def sf_query(soql: str, access_token: str, instance_url: str):
     """
     Query Salesforce using provided access token & instance URL.
@@ -17,8 +20,14 @@ def sf_query(soql: str, access_token: str, instance_url: str):
     headers = {"Authorization": f"Bearer {access_token}"}
     url = f"{instance_url}/services/data/v62.0/query"
     params = {"q": soql}
-    r = requests.get(url, headers=headers, params=params)
-    return r.json()
+    r = requests.get(url, headers=headers, params=params, timeout=30)
 
+    try:
+        return r.json()
+    except Exception:
+        return {"status_code": r.status_code, "text": r.text}
+
+# Run the app on Render
 if __name__ == "__main__":
-    app.run()
+    port = int(os.getenv("PORT", "10000"))
+    app.run(host="0.0.0.0", port=port)
