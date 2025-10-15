@@ -11,10 +11,10 @@ import uvicorn
 mcp = FastMCP("Salesforce MCP")
 
 # ---------------------------------------------------------
-# Define raw logic functions
+# Define logic functions
 # ---------------------------------------------------------
 def ping_logic() -> str:
-    """Simple health check logic"""
+    """Simple health check"""
     return "pong"
 
 def sf_query_logic(soql: str, access_token: str, instance_url: str):
@@ -28,21 +28,17 @@ def sf_query_logic(soql: str, access_token: str, instance_url: str):
         return {"status_code": r.status_code, "text": r.text}
 
 # ---------------------------------------------------------
-# Register those with MCP manually (so the agent can still find them)
+# Register functions as tools (positional arguments only)
 # ---------------------------------------------------------
-mcp.add_tool(name="ping", description="Simple health check", func=ping_logic)
-mcp.add_tool(
-    name="sf_query",
-    description="Run a Salesforce SOQL query",
-    func=sf_query_logic,
-)
+mcp.add_tool("ping", "Simple health check", ping_logic)
+mcp.add_tool("sf_query", "Run a Salesforce SOQL query", sf_query_logic)
 
 # ---------------------------------------------------------
 # FastAPI app setup
 # ---------------------------------------------------------
 app = FastAPI(title="Salesforce MCP")
 
-# Enable CORS for browser tools like Hoppscotch
+# Enable CORS (for Hoppscotch or other browser calls)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
