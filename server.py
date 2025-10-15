@@ -1,5 +1,5 @@
 from fastmcp import FastMCP
-from fastmcp.tools import tool
+from fastmcp.tools.decorators import tool
 import requests, os
 
 app = FastMCP()
