@@ -23,4 +23,4 @@ def sf_query(soql: str, access_token: str, instance_url: str):
 
 if __name__ == "__main__":
     # No host/port args in new FastMCP
-    app.run()
+    app.run("http")
