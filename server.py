@@ -29,21 +29,22 @@ def sf_query_logic(soql: str, access_token: str, instance_url: str):
         return {"status_code": r.status_code, "text": r.text}
 
 # ---------------------------------------------------------
-# Wrap functions as tools explicitly
+# Wrap and register the tools (legacy-compatible syntax)
 # ---------------------------------------------------------
-ping_tool = FunctionTool(ping_logic)
-sf_query_tool = FunctionTool(sf_query_logic)
+ping_tool = FunctionTool()
+ping_tool.set_function(ping_logic)
 
-# Register tools with MCP
+sf_query_tool = FunctionTool()
+sf_query_tool.set_function(sf_query_logic)
+
 mcp.add_tool(ping_tool)
 mcp.add_tool(sf_query_tool)
 
 # ---------------------------------------------------------
-# FastAPI app setup
+# FastAPI setup
 # ---------------------------------------------------------
 app = FastAPI(title="Salesforce MCP")
 
-# Allow requests from anywhere (CORS)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
