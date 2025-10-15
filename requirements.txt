@@ -1,2 +1,2 @@
-fastmcp
+fastmcp==0.2.12
 requests
