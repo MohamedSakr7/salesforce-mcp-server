@@ -1,18 +1,17 @@
-from fastmcp import FastMCP
-from fastmcp.tools.decorators import tool
+from fastmcp import FastMCP, tool
 import requests, os
 
 app = FastMCP()
 
-@tool()
+@tool
 def ping():
     return "pong"
 
-@tool()
+@tool
 def sf_query(soql: str, access_token: str, instance_url: str):
     """
     Query Salesforce using provided access token & instance URL.
-    Lovable backend will supply these values via headers.
+    Lovable backend will supply these values via headers or parameters.
     """
     headers = {"Authorization": f"Bearer {access_token}"}
     url = f"{instance_url}/services/data/v62.0/query"
@@ -21,5 +20,4 @@ def sf_query(soql: str, access_token: str, instance_url: str):
     return r.json()
 
 if __name__ == "__main__":
-    # FastMCP automatically exposes /mcp and /health endpoints
     app.run()
