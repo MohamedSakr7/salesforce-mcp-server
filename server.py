@@ -5,17 +5,19 @@ import requests
 import os
 import uvicorn
 
+# ---------------------------------------------------------
 # Create MCP
+# ---------------------------------------------------------
 mcp = FastMCP("Salesforce MCP")
 
-# Tools (logic-only, not called directly)
-@mcp.tool
-def ping_tool() -> str:
-    """Simple health check"""
+# ---------------------------------------------------------
+# Define raw logic functions
+# ---------------------------------------------------------
+def ping_logic() -> str:
+    """Simple health check logic"""
     return "pong"
 
-@mcp.tool
-def sf_query_tool(soql: str, access_token: str, instance_url: str):
+def sf_query_logic(soql: str, access_token: str, instance_url: str):
     """Run a Salesforce SOQL query"""
     headers = {"Authorization": f"Bearer {access_token}"}
     url = f"{instance_url}/services/data/v62.0/query"
@@ -25,11 +27,22 @@ def sf_query_tool(soql: str, access_token: str, instance_url: str):
     except Exception:
         return {"status_code": r.status_code, "text": r.text}
 
+# ---------------------------------------------------------
+# Register those with MCP manually (so the agent can still find them)
+# ---------------------------------------------------------
+mcp.add_tool(name="ping", description="Simple health check", func=ping_logic)
+mcp.add_tool(
+    name="sf_query",
+    description="Run a Salesforce SOQL query",
+    func=sf_query_logic,
+)
 
-# FastAPI app
+# ---------------------------------------------------------
+# FastAPI app setup
+# ---------------------------------------------------------
 app = FastAPI(title="Salesforce MCP")
 
-# ✅ Enable CORS for Hoppscotch or browser calls
+# Enable CORS for browser tools like Hoppscotch
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -38,18 +51,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ---------------------------------------------------------
+# Endpoints
+# ---------------------------------------------------------
 @app.get("/health")
 def health():
     return {"status": "ok"}
 
-# ✅ OPTIONS and POST routes for /ping
 @app.options("/ping")
 def ping_options():
     return {}
 
 @app.post("/ping")
 def ping_route():
-    return {"result": ping_tool.__wrapped__()}  # ✅ call underlying function logic
+    return {"result": ping_logic()}
 
 @app.options("/sf_query")
 def sf_query_options():
@@ -61,8 +76,11 @@ async def sf_query_route(request: Request):
     soql = data.get("soql")
     access_token = data.get("access_token")
     instance_url = data.get("instance_url")
-    return {"result": sf_query_tool.__wrapped__(soql, access_token, instance_url)}  # ✅ same idea
+    return {"result": sf_query_logic(soql, access_token, instance_url)}
 
+# ---------------------------------------------------------
+# Entry point
+# ---------------------------------------------------------
 if __name__ == "__main__":
     port = int(os.getenv("PORT", "10000"))
     uvicorn.run(app, host="0.0.0.0", port=port)
