@@ -38,7 +38,6 @@ mcp.add_tool("sf_query", "Run a Salesforce SOQL query", sf_query_logic)
 # ---------------------------------------------------------
 app = FastAPI(title="Salesforce MCP")
 
-# Enable CORS (for Hoppscotch or other browser calls)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
