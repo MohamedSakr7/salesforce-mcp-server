@@ -24,6 +24,16 @@ def sf_query(soql: str, access_token: str, instance_url: str):
     except Exception:
         return {"status_code": r.status_code, "text": r.text}
 
+# ✅ Create a small FastAPI app to serve /health endpoint
+fastapi_app = FastAPI()
+
+@fastapi_app.get("/health")
+def health():
+    return {"status": "ok"}
+
+# ✅ Mount FastMCP’s router into the same FastAPI app
+app.mount_to_fastapi(fastapi_app)
+
 if __name__ == "__main__":
     # Render provides the port via the PORT env variable
     port = int(os.getenv("PORT", 10000))
