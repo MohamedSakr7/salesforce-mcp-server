@@ -28,16 +28,17 @@ def sf_query_logic(soql: str, access_token: str, instance_url: str):
         return {"status_code": r.status_code, "text": r.text}
 
 # ---------------------------------------------------------
-# Register functions as tools (positional arguments only)
+# Register the tools (just pass the function directly)
 # ---------------------------------------------------------
-mcp.add_tool("ping", "Simple health check", ping_logic)
-mcp.add_tool("sf_query", "Run a Salesforce SOQL query", sf_query_logic)
+mcp.add_tool(ping_logic)
+mcp.add_tool(sf_query_logic)
 
 # ---------------------------------------------------------
 # FastAPI app setup
 # ---------------------------------------------------------
 app = FastAPI(title="Salesforce MCP")
 
+# Enable CORS for external requests
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
